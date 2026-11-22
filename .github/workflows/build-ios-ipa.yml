@@ -1,0 +1,116 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner_image:
+        description: 'macOS runner image (e.g. macos-26 or macos-15)'
+        required: true
+        default: 'macos-26'
+      rebuild_sysroot:
+        description: 'Force rebuild sysroot?'
+        type: boolean
+        required: false
+        default: false
+      ipa_mode:
+        description: 'Package mode'
+        type: choice
+        required: true
+        default: 'ipa'
+        options:
+          - ipa
+          - ipa-hv
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUILD_XCODE_PATH: ${{ vars.HOST_XCODE_PATH || '/Applications/Xcode.app' }}
+
+jobs:
+  static-checks:
+    name: Static checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run static checks
+        run: sh Tests/Static/run_all.sh --no-sdp
+
+  build-ios-ipa:
+    name: Build UTM iOS IPA (arm64 + Built-in StikJIT)
+    runs-on: ${{ inputs.runner_image || vars.RUNNER_IMAGE || 'macos-26' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Xcode
+        shell: bash
+        run: |
+          if [ -d "${{ env.BUILD_XCODE_PATH }}" ]; then
+            [[ "$(xcode-select -p)" == "${{ env.BUILD_XCODE_PATH }}"* ]] || sudo xcode-select -s "${{ env.BUILD_XCODE_PATH }}"
+          fi
+          xcodebuild -version
+
+      - name: Setup Path
+        shell: bash
+        run: |
+          echo "/usr/local/opt/bison/bin:/opt/homebrew/opt/bison/bin" >> "$GITHUB_PATH"
+
+      - name: Restore Sysroot Cache
+        id: cache-sysroot
+        uses: actions/cache/restore@v4
+        with:
+          path: ./sysroot-iOS-arm64
+          key: ios-arm64-stikjit-${{ hashFiles('scripts/build_dependencies.sh', 'scripts/build_stikjit.sh', 'scripts/fixup.sh') }}-${{ hashFiles('patches/**') }}-${{ github.run_id }}
+          restore-keys: |
+            ios-arm64-stikjit-${{ hashFiles('scripts/build_dependencies.sh', 'scripts/build_stikjit.sh', 'scripts/fixup.sh') }}-${{ hashFiles('patches/**') }}-
+
+      - name: Install Sysroot Build Dependencies
+        if: steps.cache-sysroot.outputs.cache-matched-key == '' || inputs.rebuild_sysroot
+        run: |
+          brew uninstall cmake || true
+          brew install bison pkg-config gettext glib-utils libgpg-error nasm make meson cmake xcodegen llvm spirv-llvm-translator libxcb libxrandr
+          pip3 install --break-system-packages --user six pyparsing pyyaml setuptools distlib mako
+          gem install --user-install xcpretty
+          rm -f /usr/local/lib/pkgconfig/*.pc
+
+      - name: Build Sysroot (iOS arm64 + StikJIT)
+        if: steps.cache-sysroot.outputs.cache-matched-key == '' || inputs.rebuild_sysroot
+        run: ./scripts/build_dependencies.sh -p ios -a arm64
+        env:
+          NCPU: 0
+
+      - name: Save Sysroot Cache
+        if: steps.cache-sysroot.outputs.cache-matched-key == '' || inputs.rebuild_sysroot
+        uses: actions/cache/save@v4
+        with:
+          path: ./sysroot-iOS-arm64
+          key: ios-arm64-stikjit-${{ hashFiles('scripts/build_dependencies.sh', 'scripts/build_stikjit.sh', 'scripts/fixup.sh') }}-${{ hashFiles('patches/**') }}-${{ github.run_id }}
+          upload-chunk-size: 1048576
+
+      - name: Static Checks (SDP)
+        run: sh Tests/Static/run_all.sh --sdp-only
+
+      - name: Install Packaging Tools
+        run: |
+          brew install ldid
+          if [ ! -d "sysroot-iOS-arm64/Frameworks/StikJIT.framework" ]; then
+            command -v xcodegen >/dev/null 2>&1 || brew install xcodegen
+          fi
+
+      - name: Build UTM Archive
+        run: ./scripts/build_utm.sh -k iphoneos -s iOS -a arm64 -o UTM
+
+      - name: Package IPA
+        run: ./scripts/package.sh "${{ inputs.ipa_mode }}" UTM.xcarchive out
+
+      - name: Upload UTM IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: UTM-iOS-StikJIT-${{ inputs.ipa_mode }}
+          path: out/UTM.ipa
+          if-no-files-found: error

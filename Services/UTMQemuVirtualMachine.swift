@@ -472,9 +472,22 @@ extension UTMQemuVirtualMachine {
         try await qemuEnsureEfiVarsAvailable()
         try Task.checkCancellation()
         
+        #if os(iOS) && WITH_JIT
+        if await !config.qemu.hasHypervisor {
+            try await UTMJITCoordinator.shared.ensureJITBeforeVMStart()
+        }
+        #endif
+
         // start QEMU
         await qemuVM.setDelegate(self)
-        try await qemuVM.start(launcher: system, interface: interface)
+        do {
+            try await qemuVM.start(launcher: system, interface: interface)
+        } catch {
+            #if os(iOS) && WITH_JIT
+            await UTMJITCoordinator.shared.releasePendingBuiltInAttachIfNeeded()
+            #endif
+            throw error
+        }
         let monitor = await monitor!
         try Task.checkCancellation()
         

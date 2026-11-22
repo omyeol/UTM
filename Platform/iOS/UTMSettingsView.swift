@@ -17,7 +17,17 @@
 import SwiftUI
 
 struct UTMSettingsView: View {
+    enum Tab: Hashable {
+        case general
+        case jit
+    }
+
     @Environment(\.presentationMode) private var presentationMode: Binding<PresentationMode>
+    @State private var selectedTab: Tab
+
+    init(initialTab: Tab = .general) {
+        _selectedTab = State(initialValue: initialTab)
+    }
     
     private var hasContainer: Bool {
         #if WITH_JIT
@@ -29,18 +39,42 @@ struct UTMSettingsView: View {
 
     var body: some View {
         NavigationView {
-            IASKAppSettings()
-                .navigationTitle("Settings")
+            content
+                .navigationTitle(selectedTab == .jit ? "JIT" : "Settings")
                 .navigationBarTitleDisplayMode(.inline)
-                .appSettingsShowPrivacyLink(hasContainer)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {
                         Button("Close") {
                             presentationMode.wrappedValue.dismiss()
                         }
                     }
+                    #if WITH_JIT && os(iOS)
+                    ToolbarItem(placement: .principal) {
+                        Picker("Settings Section", selection: $selectedTab) {
+                            Text("General").tag(Tab.general)
+                            Text("JIT").tag(Tab.jit)
+                        }
+                        .pickerStyle(.segmented)
+                        .frame(maxWidth: 200)
+                    }
+                    #endif
                 }
         }.navigationViewStyle(.stack)
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        #if WITH_JIT && os(iOS)
+        if selectedTab == .jit {
+            UTMJITSettingsView()
+        } else {
+            IASKAppSettings()
+                .appSettingsShowPrivacyLink(hasContainer)
+        }
+        #else
+        IASKAppSettings()
+            .appSettingsShowPrivacyLink(hasContainer)
+        #endif
     }
 }
 

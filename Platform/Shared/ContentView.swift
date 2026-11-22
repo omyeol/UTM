@@ -121,6 +121,12 @@ struct ContentView: View {
                     }
                     #endif
 
+                    #if os(iOS)
+                    if #available(iOS 17.4, *) {
+                        return
+                    }
+                    #endif
+
                     // ignore error when we are running on a HV only build
                     if !UTMCapabilities.current.contains(.hasHypervisorSupport) {
                         throw NSLocalizedString("Your version of iOS does not support running VMs while unmodified. You must either run UTM while jailbroken or with a remote debugger attached. See https://getutm.app/install/ for more details.", comment: "ContentView")

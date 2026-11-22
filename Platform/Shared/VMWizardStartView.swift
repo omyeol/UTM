@@ -33,6 +33,12 @@ struct VMWizardStartView: View {
     var isEmulationSupported: Bool {
         #if !WITH_JIT
         true
+        #elseif os(iOS)
+        if #available(iOS 17.4, *) {
+            return true
+        } else {
+            return Main.jitAvailable
+        }
         #else
         Main.jitAvailable
         #endif

@@ -31,6 +31,17 @@ extension UTMData {
         if let session = VMSessionState.allActiveSessions.values.first(where: { $0.vm.id == wrapped.id }) {
             session.showWindow()
         } else if vm.isStopped || vm.isTakeoverAllowed {
+            #if os(iOS) && WITH_JIT
+            if vm.isStopped,
+               let qemuVM = wrapped as? UTMQemuVirtualMachine,
+               !qemuVM.config.qemu.hasHypervisor {
+                let jit = UTMJITCoordinator.shared
+                if jit.method == .builtIn && !jit.isJITReadyForCurrentEnvironment && (!UTMJITBuiltIn.isAvailable || !UTMJITPairingFileStore.exists) {
+                    jit.showSetup = true
+                    return
+                }
+            }
+            #endif
             let session = VMSessionState(for: wrapped as! (any UTMSpiceVirtualMachine))
             session.start(options: options)
         } else {

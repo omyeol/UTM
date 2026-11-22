@@ -1201,6 +1201,9 @@ build_spice_client
 build_vulkan_drivers
 build_d3d_drivers
 fixup_all
+if [ "$PLATFORM" == "ios" ]; then
+    "$BASEDIR/build_stikjit.sh" "$SYSROOT_DIR" "$BUILD_DIR/stikjit-work"
+fi
 remove_shared_gst_plugins # another hack...
 echo "${GREEN}All done!${NC}"
 touch "$BUILD_DIR/BUILD_SUCCESS"

@@ -91,6 +91,10 @@ if [ ! -z "$TEAM_IDENTIFIER" ]; then
     TEAM_IDENTIFIER_PREFIX="TeamIdentifierPrefix=${TEAM_IDENTIFIER}."
 fi
 
+if [ "$SDK" == "iphoneos" ] && [ "$SCHEME" == "iOS" ] && [ ! -d "sysroot-iOS-$ARCH/Frameworks/StikJIT.framework" ]; then
+    "$BASEDIR/build_stikjit.sh" "sysroot-iOS-$ARCH"
+fi
+
 xcodebuild archive -archivePath "$OUTPUT" -scheme "$SCHEME" -destination "generic/platform=$PLATFORM" ARCHS="$ARCH" -configuration Release -skipPackagePluginValidation CODE_SIGNING_ALLOWED=NO $TEAM_IDENTIFIER_PREFIX
 BUILT_PATH=$(find $OUTPUT.xcarchive -name '*.app' -type d | head -1)
 # Only retain the target architecture to address < iOS 15 crash & save disk space

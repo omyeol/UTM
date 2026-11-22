@@ -255,6 +255,18 @@
 		84A57D0B30641D0000BA5139 /* qemu-img.framework in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 8453DCB0278CE33E0037A0DA /* qemu-img.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		84A57D0D30641D0000BA5139 /* UTMHelperProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A57D0C30641D0000BA5139 /* UTMHelperProcess.swift */; };
 		84A57D0E30641D0000BA5139 /* UTMHelperProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A57D0C30641D0000BA5139 /* UTMHelperProcess.swift */; };
+		9A1000000000000000000101 /* UTMJITHelper.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 9A1000000000000000000001 /* UTMJITHelper.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9A1000000000000000000102 /* UTMJITHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000000000000000000002 /* UTMJITHelper.swift */; };
+		9A1000000000000000000103 /* UTMJITMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000000000000000000003 /* UTMJITMessages.swift */; };
+		9A1000000000000000000104 /* RSDPortResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000000000000000000004 /* RSDPortResolver.swift */; };
+		9A1000000000000000000105 /* RSDPortScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000000000000000000005 /* RSDPortScanner.swift */; };
+		9A1000000000000000000106 /* UTMJITMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000000000000000000003 /* UTMJITMessages.swift */; platformFilter = ios; };
+		9A1000000000000000000107 /* UTMJITNetworkAdvice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000000000000000000007 /* UTMJITNetworkAdvice.swift */; platformFilter = ios; };
+		9A1000000000000000000108 /* UTMJITBuiltIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000000000000000000008 /* UTMJITBuiltIn.swift */; platformFilter = ios; };
+		9A1000000000000000000109 /* UTMJITCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1000000000000000000009 /* UTMJITCoordinator.swift */; platformFilter = ios; };
+		9A100000000000000000010A /* UTMJITSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A100000000000000000000A /* UTMJITSettingsView.swift */; platformFilter = ios; };
+		9A100000000000000000010B /* UTMJITTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A100000000000000000000B /* UTMJITTests.swift */; };
+		9A100000000000000000010C /* UTMJITTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A100000000000000000000B /* UTMJITTests.swift */; };
 		84B36D1E27B3264600C22685 /* CocoaSpice in Frameworks */ = {isa = PBXBuildFile; productRef = 84B36D1D27B3264600C22685 /* CocoaSpice */; };
 		84B36D2027B3264E00C22685 /* CocoaSpiceNoUsb in Frameworks */ = {isa = PBXBuildFile; productRef = 84B36D1F27B3264E00C22685 /* CocoaSpiceNoUsb */; };
 		84B36D2227B3265400C22685 /* CocoaSpice in Frameworks */ = {isa = PBXBuildFile; productRef = 84B36D2127B3265400C22685 /* CocoaSpice */; };
@@ -1477,6 +1489,13 @@
 			remoteGlobalIDString = 84A57D0130641D0000BA5139;
 			remoteInfo = "iOSHelper-SE";
 		};
+		9A1000000000000000000308 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CE550BC1225947990063E575 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9A1000000000000000000301;
+			remoteInfo = UTMJITHelper;
+		};
 		84E3A8FC293DB7720024A740 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = CE550BC1225947990063E575 /* Project object */;
@@ -1556,6 +1575,17 @@
 				84A57CC330641CCE00BA5139 /* iOSHelper-SE.appex in Embed ExtensionKit Extensions */,
 			);
 			name = "Embed ExtensionKit Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9A100000000000000000030A /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				9A1000000000000000000101 /* UTMJITHelper.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		84E3A8EE293DB37E0024A740 /* Copy Files */ = {
@@ -2062,6 +2092,17 @@
 		84A57D0930641D0000BA5139 /* iOSHelper-SE.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = "iOSHelper-SE.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		84A57D0C30641D0000BA5139 /* UTMHelperProcess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTMHelperProcess.swift; sourceTree = "<group>"; };
 		84A57D0F30641D0000BA5139 /* iOSHelper-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iOSHelper-Bridging-Header.h"; sourceTree = "<group>"; };
+		9A1000000000000000000001 /* UTMJITHelper.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = UTMJITHelper.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		9A1000000000000000000002 /* UTMJITHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTMJITHelper.swift; sourceTree = "<group>"; };
+		9A1000000000000000000003 /* UTMJITMessages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTMJITMessages.swift; sourceTree = "<group>"; };
+		9A1000000000000000000004 /* RSDPortResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSDPortResolver.swift; sourceTree = "<group>"; };
+		9A1000000000000000000005 /* RSDPortScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSDPortScanner.swift; sourceTree = "<group>"; };
+		9A1000000000000000000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9A1000000000000000000007 /* UTMJITNetworkAdvice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTMJITNetworkAdvice.swift; sourceTree = "<group>"; };
+		9A1000000000000000000008 /* UTMJITBuiltIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTMJITBuiltIn.swift; sourceTree = "<group>"; };
+		9A1000000000000000000009 /* UTMJITCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTMJITCoordinator.swift; sourceTree = "<group>"; };
+		9A100000000000000000000A /* UTMJITSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTMJITSettingsView.swift; sourceTree = "<group>"; };
+		9A100000000000000000000B /* UTMJITTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTMJITTests.swift; sourceTree = "<group>"; };
 		84B36D2427B704C200C22685 /* UTMDownloadVMTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTMDownloadVMTask.swift; sourceTree = "<group>"; };
 		84B36D2827B790BE00C22685 /* DestructiveButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DestructiveButton.swift; sourceTree = "<group>"; };
 		84BB99392899E8D500DF28B2 /* VMHeadlessSessionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMHeadlessSessionState.swift; sourceTree = "<group>"; };
@@ -2922,12 +2963,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9A1000000000000000000303 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		1B7FA4FED57DF488141BABF6 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				9A100000000000000000000B /* UTMJITTests.swift */,
 				7DDD429C6CBB4D28B5E32815 /* Wizard */,
 				86C34BA826940427924E913E /* Configuration */,
 				CE8DE4F015BF429591AD8070 /* Support */,
@@ -3247,6 +3296,7 @@
 		CE2D954A24AD4F980059923A /* iOS */ = {
 			isa = PBXGroup;
 			children = (
+				9A1000000000000000000202 /* JIT */,
 				FF2D14863C5CDE332BC8698C /* VMConfigQEMUArgumentsView.swift */,
 				CE7BED4D22600F5000A1E1B6 /* Display */,
 				CE8813D224CD230300532628 /* ActivityView.swift */,
@@ -3349,6 +3399,7 @@
 				84E3A8F1293DB37E0024A740 /* utmctl */,
 				CE88A0A12E23201100EAA28E /* Intents */,
 				84A57CC030641C9100BA5139 /* iOSHelper */,
+				9A1000000000000000000201 /* UTMJITHelper */,
 				CE550BCA225947990063E575 /* Products */,
 				CE2D63D622653C7300FC7E63 /* Frameworks */,
 				EBBCFE1A7894622806597A83 /* Tests */,
@@ -3370,6 +3421,7 @@
 				CEA3EDFA30168B9000AAA8E4 /* QEMURenderServer.app */,
 				84A57CB130641C6800BA5139 /* iOSHelper.appex */,
 				84A57D0930641D0000BA5139 /* iOSHelper-SE.appex */,
+				9A1000000000000000000001 /* UTMJITHelper.appex */,
 				83D247E634B2F02C2901FCAE /* UTMTests.xctest */,
 				5DB603DFF3214168B0E1071E /* UTMUITests.xctest */,
 				7C5D1E2F3A4B4C5D9E8F0A1B /* UTMUITests-iOS.xctest */,
@@ -3785,6 +3837,29 @@
 			path = iOS;
 			sourceTree = "<group>";
 		};
+		9A1000000000000000000201 /* UTMJITHelper */ = {
+			isa = PBXGroup;
+			children = (
+				9A1000000000000000000002 /* UTMJITHelper.swift */,
+				9A1000000000000000000003 /* UTMJITMessages.swift */,
+				9A1000000000000000000004 /* RSDPortResolver.swift */,
+				9A1000000000000000000005 /* RSDPortScanner.swift */,
+				9A1000000000000000000006 /* Info.plist */,
+			);
+			path = UTMJITHelper;
+			sourceTree = "<group>";
+		};
+		9A1000000000000000000202 /* JIT */ = {
+			isa = PBXGroup;
+			children = (
+				9A1000000000000000000007 /* UTMJITNetworkAdvice.swift */,
+				9A1000000000000000000008 /* UTMJITBuiltIn.swift */,
+				9A1000000000000000000009 /* UTMJITCoordinator.swift */,
+				9A100000000000000000000A /* UTMJITSettingsView.swift */,
+			);
+			path = JIT;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -3853,6 +3928,25 @@
 			productReference = 84A57D0930641D0000BA5139 /* iOSHelper-SE.appex */;
 			productType = "com.apple.product-type.extensionkit-extension";
 		};
+		9A1000000000000000000301 /* UTMJITHelper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9A1000000000000000000305 /* Build configuration list for PBXNativeTarget "UTMJITHelper" */;
+			buildPhases = (
+				9A1000000000000000000302 /* Sources */,
+				9A1000000000000000000303 /* Frameworks */,
+				9A1000000000000000000304 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = UTMJITHelper;
+			packageProductDependencies = (
+			);
+			productName = UTMJITHelper;
+			productReference = 9A1000000000000000000001 /* UTMJITHelper.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		84E3A8EF293DB37E0024A740 /* utmctl */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 84E3A8F6293DB37E0024A740 /* Build configuration list for PBXNativeTarget "utmctl" */;
@@ -3883,12 +3977,15 @@
 				CE59A7B12ABCC75F00E5FFBD /* Patch Settings bundle */,
 				CE2D937524AD46670059923A /* Embed Libraries */,
 				84A57CB930641C6800BA5139 /* Embed ExtensionKit Extensions */,
+				9A100000000000000000030A /* Embed App Extensions */,
+				9A100000000000000000030B /* Embed StikJIT */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				CE9A353326533A52005077CF /* PBXTargetDependency */,
 				84A57CB730641C6800BA5139 /* PBXTargetDependency */,
+				9A1000000000000000000309 /* PBXTargetDependency */,
 			);
 			name = iOS;
 			packageProductDependencies = (
@@ -4171,6 +4268,9 @@
 					84A57D0130641D0000BA5139 = {
 						CreatedOnToolsVersion = 27.0;
 					};
+					9A1000000000000000000301 = {
+						CreatedOnToolsVersion = 27.0;
+					};
 					84E3A8EF293DB37E0024A740 = {
 						CreatedOnToolsVersion = 14.1;
 						LastSwiftMigration = 1410;
@@ -4244,6 +4344,7 @@
 				84E3A8EF293DB37E0024A740 /* utmctl */,
 				84A57CB030641C6800BA5139 /* iOSHelper */,
 				84A57D0130641D0000BA5139 /* iOSHelper-SE */,
+				9A1000000000000000000301 /* UTMJITHelper */,
 				E99F7EFE5343A0EF89C4579F /* UTMTests */,
 				58633E04F238450DB4E3E328 /* UTMTests-iOS */,
 				9E9D7AD421764EDC80FBEEE8 /* UTMUITests */,
@@ -4287,6 +4388,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				CEF53CBF309579BE00E004BB /* Localizable.xcstrings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9A1000000000000000000304 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4505,6 +4613,26 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nSRC=\"${PROJECT_DIR}/${SYSROOT_DIR}/Frameworks/D3DMetal.framework\"\nDST=\"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/D3DMetal.framework\"\n\nif [ ! -d \"${SRC}\" ]; then\n    echo \"note: D3DMetal.framework not found in ${SYSROOT_DIR}, skipping\"\n    rm -rf \"${DST}\"\n    exit 0\nfi\n\n# Extended attributes on the input would make codesign refuse the bundle.\nmkdir -p \"$(dirname \"${DST}\")\"\nrm -rf \"${DST}\"\nditto --norsrc --noextattr --noqtn \"${SRC}\" \"${DST}\"\n\nif [ \"${CODE_SIGNING_ALLOWED}\" != \"NO\" ] && [ -n \"${EXPANDED_CODE_SIGN_IDENTITY}\" ]; then\n    if [ \"${ENABLE_HARDENED_RUNTIME}\" = \"YES\" ]; then\n        RUNTIME_FLAGS=\"--options runtime\"\n    fi\n    codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" ${RUNTIME_FLAGS} ${OTHER_CODE_SIGN_FLAGS} \"${DST}\"\nfi\n";
 		};
+		9A100000000000000000030B /* Embed StikJIT */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(PROJECT_DIR)/$(SYSROOT_DIR)/Frameworks/StikJIT.framework",
+			);
+			name = "Embed StikJIT";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/StikJIT.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n\nif [ \"${PLATFORM_NAME}\" != \"iphoneos\" ]; then\n    exit 0\nfi\n\nSRC=\"${PROJECT_DIR}/${SYSROOT_DIR}/Frameworks/StikJIT.framework\"\nDST=\"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/StikJIT.framework\"\n\nif [ ! -d \"${SRC}\" ]; then\n    echo \"error: StikJIT.framework not found at ${SRC}. Run scripts/build_stikjit.sh ${SYSROOT_DIR}.\" >&2\n    exit 1\nfi\n\nmkdir -p \"$(dirname \"${DST}\")\"\nrm -rf \"${DST}\"\nditto --norsrc --noextattr --noqtn \"${SRC}\" \"${DST}\"\nrm -rf \"${DST}/Headers\" \"${DST}/PrivateHeaders\" \"${DST}/Modules\"\n\nif [ \"${CODE_SIGNING_ALLOWED}\" != \"NO\" ] && [ -n \"${EXPANDED_CODE_SIGN_IDENTITY}\" ]; then\n    codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" ${OTHER_CODE_SIGN_FLAGS} --timestamp=none \"${DST}\"\nfi\n";
+		};
 		CEB7C0A12F6A1E3000C4A1CE /* Restore Legacy App Icon */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -4598,6 +4726,7 @@
 				2E00F8A08521488F946C9B44 /* VMNameFieldTests.swift in Sources */,
 				D9942A0FC95140A289AD11C2 /* VMWizardStartViewTests.swift in Sources */,
 				6A2D5E70817DC6C9DA00002C /* VMWizardHardwareViewTests.swift in Sources */,
+				9A100000000000000000010B /* UTMJITTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4626,6 +4755,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9A1000000000000000000302 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9A1000000000000000000102 /* UTMJITHelper.swift in Sources */,
+				9A1000000000000000000103 /* UTMJITMessages.swift in Sources */,
+				9A1000000000000000000104 /* RSDPortResolver.swift in Sources */,
+				9A1000000000000000000105 /* RSDPortScanner.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		84E3A8EC293DB37E0024A740 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -4639,6 +4779,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A1000000000000000000106 /* UTMJITMessages.swift in Sources */,
+				9A1000000000000000000107 /* UTMJITNetworkAdvice.swift in Sources */,
+				9A1000000000000000000108 /* UTMJITBuiltIn.swift in Sources */,
+				9A1000000000000000000109 /* UTMJITCoordinator.swift in Sources */,
+				9A100000000000000000010A /* UTMJITSettingsView.swift in Sources */,
 				7591FABAADBC2544E9F0F37B /* VMConfigQEMUCommandLineView.swift in Sources */,
 				7EFF134EA0581C7A4CBBBAF5 /* VMConfigQEMUArgumentsView.swift in Sources */,
 				84A57D0D30641D0000BA5139 /* UTMHelperProcess.swift in Sources */,
@@ -5460,6 +5605,7 @@
 				ACAF43C92ACD532580C95D0A /* VMNameFieldTests.swift in Sources */,
 				2BDF24345F9C5481857EDBCF /* VMWizardStartViewTests.swift in Sources */,
 				9E21EF2B3055C660DFF8D426 /* VMWizardHardwareViewTests.swift in Sources */,
+				9A100000000000000000010C /* UTMJITTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5510,6 +5656,12 @@
 			platformFilter = ios;
 			target = 84A57D0130641D0000BA5139 /* iOSHelper-SE */;
 			targetProxy = 84A57CC430641CCE00BA5139 /* PBXContainerItemProxy */;
+		};
+		9A1000000000000000000309 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilter = ios;
+			target = 9A1000000000000000000301 /* UTMJITHelper */;
+			targetProxy = 9A1000000000000000000308 /* PBXContainerItemProxy */;
 		};
 		84E3A8FD293DB7720024A740 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -5928,6 +6080,74 @@
 				TARGETED_DEVICE_FAMILY = "1,2,7";
 				UTM_HOST_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_PREFIX:default=com.utmapp).UTM-SE";
 				XROS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
+		9A1000000000000000000306 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_IDENTITY = "$(CODE_SIGN_IDENTITY_IOS:default=Apple Development)";
+				CODE_SIGN_STYLE = "$(CODE_SIGN_STYLE_IOS:default=)";
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/$(SYSROOT_DIR)/Frameworks",
+				);
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = UTMJITHelper/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../../Frameworks",
+				);
+				"OTHER_LDFLAGS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"-framework",
+					StikJIT,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_PREFIX:default=com.utmapp).UTM.JITHelper";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(PROVISIONING_PROFILE_SPECIFIER_IOS_JIT_HELPER:default=)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9A1000000000000000000307 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_IDENTITY = "$(CODE_SIGN_IDENTITY_IOS:default=Apple Development)";
+				CODE_SIGN_STYLE = "$(CODE_SIGN_STYLE_IOS:default=)";
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/$(SYSROOT_DIR)/Frameworks",
+				);
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = UTMJITHelper/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../../Frameworks",
+				);
+				"OTHER_LDFLAGS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"-framework",
+					StikJIT,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_PREFIX:default=com.utmapp).UTM.JITHelper";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(PROVISIONING_PROFILE_SPECIFIER_IOS_JIT_HELPER:default=)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -6796,6 +7016,15 @@
 			buildConfigurations = (
 				84A57D0330641D0000BA5139 /* Debug */,
 				84A57D0430641D0000BA5139 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9A1000000000000000000305 /* Build configuration list for PBXNativeTarget "UTMJITHelper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9A1000000000000000000306 /* Debug */,
+				9A1000000000000000000307 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

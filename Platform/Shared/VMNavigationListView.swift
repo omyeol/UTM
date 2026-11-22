@@ -129,6 +129,10 @@ private struct VMListModifier: ViewModifier {
     @State private var settingsPresented = false
     @State private var sheetPresented = false
     @State private var donatePresented = false
+    #if os(iOS) && WITH_JIT
+    @ObservedObject private var jitCoordinator = UTMJITCoordinator.shared
+    @State private var jitSetupPresented = false
+    #endif
 
     private let _donateTip: Any?
     private let _createTip: Any?
@@ -173,6 +177,10 @@ private struct VMListModifier: ViewModifier {
                 #if !WITH_REMOTE
                 UTMSettingsView()
                 #endif
+            #if WITH_JIT
+            } else if jitSetupPresented {
+                UTMSettingsView(initialTab: .jit)
+            #endif
             } else if donatePresented {
                 #if !os(macOS) && !WITH_REMOTE
                 UTMDonateView()
@@ -183,6 +191,9 @@ private struct VMListModifier: ViewModifier {
             if newValue {
                 settingsPresented = false
                 donatePresented = false
+                #if WITH_JIT
+                jitSetupPresented = false
+                #endif
                 sheetPresented = true
             }
         }
@@ -190,13 +201,30 @@ private struct VMListModifier: ViewModifier {
             if newValue {
                 data.showNewVMSheet = false
                 donatePresented = false
+                #if WITH_JIT
+                jitSetupPresented = false
+                #endif
                 sheetPresented = true
             }
         }
+        #if WITH_JIT
+        .onChange(of: jitCoordinator.showSetup) { newValue in
+            if newValue {
+                data.showNewVMSheet = false
+                settingsPresented = false
+                donatePresented = false
+                jitSetupPresented = true
+                sheetPresented = true
+            }
+        }
+        #endif
         .onChange(of: donatePresented) { newValue in
             if newValue {
                 data.showNewVMSheet = false
                 settingsPresented = false
+                #if WITH_JIT
+                jitSetupPresented = false
+                #endif
                 sheetPresented = true
             }
         }
@@ -205,6 +233,10 @@ private struct VMListModifier: ViewModifier {
                 settingsPresented = false
                 donatePresented = false
                 data.showNewVMSheet = false
+                #if WITH_JIT
+                jitSetupPresented = false
+                jitCoordinator.showSetup = false
+                #endif
             }
         }
         .onReceive(NSNotification.OpenVirtualMachine) { _ in

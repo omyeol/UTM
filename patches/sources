@@ -60,3 +60,7 @@ D3DMETAL_COMMIT="af1ee1710711fadff41dead87960d0f1336c1047"
 # Decompiled Hypervisor for iOS
 HYPERVISOR_REPO="https://github.com/utmapp/Hypervisor.git"
 HYPERVISOR_COMMIT="b2c910fb9f687929a50e5a7d62e59e43a006d47d"
+
+# Built-in StikJIT for iOS
+STIKJIT_REPO="https://github.com/StikDebug/StikJIT.git"
+STIKJIT_TAG="2.0.1"

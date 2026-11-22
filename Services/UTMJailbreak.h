@@ -28,5 +28,9 @@ bool jb_has_cs_disabled(void);
 bool jb_enable_ptrace_hack(void);
 bool jb_increase_memlimit(void);
 bool jb_spawn_ptrace_child(int argc, char **argv);
+bool jb_is_debugger_traced(void);
+bool jb_is_debugged_cs_status(void);
+bool jb_has_get_task_allow(void);
+void jb_trigger_legacy_jit_detach(void);
 
 #endif /* UTMJailbreak_h */

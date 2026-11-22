@@ -375,3 +375,66 @@ bool jb_spawn_ptrace_child(int argc, char **argv) {
     return false;
 }
 #endif
+
+bool jb_is_debugger_traced(void) {
+#if TARGET_OS_OSX || !defined(WITH_JIT)
+    return false;
+#else
+    int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() };
+    struct kinfo_proc info;
+    memset(&info, 0, sizeof(info));
+    size_t size = sizeof(info);
+    if (sysctl(mib, 4, &info, &size, NULL, 0) != 0) {
+        return false;
+    }
+    return (info.kp_proc.p_flag & P_TRACED) != 0;
+#endif
+}
+
+bool jb_is_debugged_cs_status(void) {
+#if TARGET_OS_OSX || !defined(WITH_JIT)
+    return false;
+#else
+    return jb_has_debugger_attached();
+#endif
+}
+
+bool jb_has_get_task_allow(void) {
+#if TARGET_OS_OSX
+    return true;
+#elif !defined(WITH_JIT)
+    return false;
+#else
+    typedef CFTypeRef (*SecTaskCreateFromSelfFn)(CFAllocatorRef);
+    typedef CFTypeRef (*SecTaskCopyValueForEntitlementFn)(CFTypeRef, CFStringRef, CFErrorRef *);
+    void *security = dlopen("/System/Library/Frameworks/Security.framework/Security", RTLD_LAZY);
+    if (security != NULL) {
+        SecTaskCreateFromSelfFn createFromSelf = (SecTaskCreateFromSelfFn)dlsym(security, "SecTaskCreateFromSelf");
+        SecTaskCopyValueForEntitlementFn copyEntitlement = (SecTaskCopyValueForEntitlementFn)dlsym(security, "SecTaskCopyValueForEntitlement");
+        if (createFromSelf != NULL && copyEntitlement != NULL) {
+            CFTypeRef task = createFromSelf(NULL);
+            if (task != NULL) {
+                CFTypeRef value = copyEntitlement(task, CFSTR("get-task-allow"), NULL);
+                bool entitled = (value != NULL) && (CFGetTypeID(value) == CFBooleanGetTypeID()) && CFBooleanGetValue((CFBooleanRef)value);
+                if (value != NULL) {
+                    CFRelease(value);
+                }
+                CFRelease(task);
+                return entitled;
+            }
+        }
+    }
+    NSDictionary *entitlements = cached_app_entitlements();
+    return [entitlements[@"get-task-allow"] boolValue];
+#endif
+}
+
+void jb_trigger_legacy_jit_detach(void) {
+#if TARGET_OS_IPHONE && !TARGET_OS_SIMULATOR && defined(__aarch64__) && defined(WITH_JIT)
+    if (jb_is_debugger_traced()) {
+        asm volatile("mov x0, #0\n"
+                     "mov x1, #0\n"
+                     "brk #0x69" ::: "x0", "x1");
+    }
+#endif
+}
