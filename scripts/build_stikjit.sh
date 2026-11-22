@@ -34,17 +34,34 @@ git -C "$STIKJIT_SRC" apply "$PATCHES_DIR/stikjit-$STIKJIT_TAG.patch"
 
 (
     cd "$STIKJIT_SRC"
-    xcodegen generate
-    xcodebuild archive \
-        -project StikJIT.xcodeproj \
-        -scheme StikJIT \
-        -configuration Release \
-        -destination 'generic/platform=iOS' \
-        -archivePath build/StikJIT-iOS \
-        SKIP_INSTALL=NO \
-        BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-        CODE_SIGNING_ALLOWED=NO \
-        -quiet
+    if [ -n "${DEVELOPER_DIR:-}" ]; then
+        set -- "DEVELOPER_DIR=$DEVELOPER_DIR"
+    else
+        set --
+    fi
+    env -i \
+        PATH="$PATH" \
+        HOME="${HOME:-/tmp}" \
+        TMPDIR="${TMPDIR:-/tmp}" \
+        LANG="${LANG:-en_US.UTF-8}" \
+        "$@" \
+        xcodegen generate
+    env -i \
+        PATH="$PATH" \
+        HOME="${HOME:-/tmp}" \
+        TMPDIR="${TMPDIR:-/tmp}" \
+        LANG="${LANG:-en_US.UTF-8}" \
+        "$@" \
+        xcodebuild archive \
+            -project StikJIT.xcodeproj \
+            -scheme StikJIT \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/StikJIT-iOS \
+            SKIP_INSTALL=NO \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            CODE_SIGNING_ALLOWED=NO \
+            -quiet
 )
 
 DST="$SYSROOT_ABS/Frameworks/StikJIT.framework"
