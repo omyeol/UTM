@@ -869,10 +869,11 @@ build_mesa_host () {
     pushd "$BUILD_DIR/mesa.git"
 
     HOST_PATH="$(brew --prefix llvm)/bin:$CLEAN_PATH"
-    env -i PATH="$HOST_PATH" meson host_build --prefix="$PREFIX/host" --buildtype=release \
+    HOST_PKG_CONFIG_PATH="$(brew --prefix spirv-tools)/lib/pkgconfig:$(brew --prefix spirv-llvm-translator)/lib/pkgconfig"
+    env -i PATH="$HOST_PATH" PKG_CONFIG_PATH="$HOST_PKG_CONFIG_PATH" meson host_build --prefix="$PREFIX/host" --buildtype=release \
         -Dllvm=enabled -Dstrip=true -Dopengl=false -Dgallium-drivers= -Dvulkan-drivers=kosmickrisp -Dplatforms=macos -Dmesa-clc=enabled -Dinstall-mesa-clc=true -Dprecomp-compiler=enabled -Dinstall-precomp-compiler=true
-    env -i PATH="$HOST_PATH" meson compile -C host_build -j $NCPU
-    env -i PATH="$HOST_PATH" meson install -C host_build
+    env -i PATH="$HOST_PATH" PKG_CONFIG_PATH="$HOST_PKG_CONFIG_PATH" meson compile -C host_build -j $NCPU
+    env -i PATH="$HOST_PATH" PKG_CONFIG_PATH="$HOST_PKG_CONFIG_PATH" meson install -C host_build
 
     popd
 }
