@@ -4621,17 +4621,24 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"$(PROJECT_DIR)/$(SYSROOT_DIR)/Frameworks/StikJIT.framework",
+				"$(PROJECT_DIR)/$(SYSROOT_DIR)/Frameworks/StikJIT.framework/StikJIT",
+				"$(PROJECT_DIR)/$(SYSROOT_DIR)/Frameworks/StikJIT.framework/Info.plist",
+				"$(PROJECT_DIR)/$(SYSROOT_DIR)/Frameworks/StikJIT.framework/legacy.js",
+				"$(PROJECT_DIR)/$(SYSROOT_DIR)/Frameworks/StikJIT.framework/universal.js",
 			);
 			name = "Embed StikJIT";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/StikJIT.framework",
+				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/StikJIT.framework/StikJIT",
+				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/StikJIT.framework/Info.plist",
+				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/StikJIT.framework/legacy.js",
+				"$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/StikJIT.framework/universal.js",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nif [ \"${PLATFORM_NAME}\" != \"iphoneos\" ]; then\n    exit 0\nfi\n\nSRC=\"${PROJECT_DIR}/${SYSROOT_DIR}/Frameworks/StikJIT.framework\"\nDST=\"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/StikJIT.framework\"\n\nif [ ! -d \"${SRC}\" ]; then\n    echo \"error: StikJIT.framework not found at ${SRC}. Run scripts/build_stikjit.sh ${SYSROOT_DIR}.\" >&2\n    exit 1\nfi\n\nmkdir -p \"$(dirname \"${DST}\")\"\nrm -rf \"${DST}\"\nditto --norsrc --noextattr --noqtn \"${SRC}\" \"${DST}\"\nrm -rf \"${DST}/Headers\" \"${DST}/PrivateHeaders\" \"${DST}/Modules\"\n\nif [ \"${CODE_SIGNING_ALLOWED}\" != \"NO\" ] && [ -n \"${EXPANDED_CODE_SIGN_IDENTITY}\" ]; then\n    codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" ${OTHER_CODE_SIGN_FLAGS} --timestamp=none \"${DST}\"\nfi\n";
+			shellScript = "set -e\n\nif [ \"${PLATFORM_NAME}\" != \"iphoneos\" ]; then\n    exit 0\nfi\n\nSRC=\"${PROJECT_DIR}/${SYSROOT_DIR}/Frameworks/StikJIT.framework\"\nDST=\"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/StikJIT.framework\"\n\nif [ ! -f \"${SRC}/StikJIT\" ]; then\n    echo \"error: StikJIT.framework not found at ${SRC}. Run scripts/build_stikjit.sh ${SYSROOT_DIR}.\" >&2\n    exit 1\nfi\n\nrm -rf \"${DST}\"\nmkdir -p \"${DST}\"\nfor FILE in StikJIT Info.plist legacy.js universal.js; do\n    cp -X \"${SRC}/${FILE}\" \"${DST}/${FILE}\"\ndone\nchmod +x \"${DST}/StikJIT\"\n\nif [ \"${CODE_SIGNING_ALLOWED}\" != \"NO\" ] && [ -n \"${EXPANDED_CODE_SIGN_IDENTITY}\" ]; then\n    codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" ${OTHER_CODE_SIGN_FLAGS} --timestamp=none \"${DST}\"\nfi\n";
 		};
 		CEB7C0A12F6A1E3000C4A1CE /* Restore Legacy App Icon */ = {
 			isa = PBXShellScriptBuildPhase;
