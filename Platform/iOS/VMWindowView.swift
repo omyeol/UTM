@@ -571,9 +571,7 @@ private struct VMWindowCloseConfirmationModifier: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        #if os(visionOS) || WITH_REMOTE
-        content
-        #else
+        #if !os(visionOS) && !WITH_REMOTE && canImport(SwiftUI, _version: 8.0)
         if #available(iOS 27, *) {
             content.dismissalConfirmationDialog("This virtual machine is still running.", shouldPresent: isLastWindowOfRunningVM) {
                 Button("Stop", role: .destructive) {
@@ -585,6 +583,8 @@ private struct VMWindowCloseConfirmationModifier: ViewModifier {
         } else {
             content
         }
+        #else
+        content
         #endif
     }
 }
