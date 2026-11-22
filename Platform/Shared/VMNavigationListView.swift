@@ -177,13 +177,15 @@ private struct VMListModifier: ViewModifier {
                 #if !WITH_REMOTE
                 UTMSettingsView()
                 #endif
-            #if WITH_JIT
-            } else if jitSetupPresented {
-                UTMSettingsView(initialTab: .jit)
-            #endif
             } else if donatePresented {
                 #if !os(macOS) && !WITH_REMOTE
                 UTMDonateView()
+                #endif
+            } else {
+                #if WITH_JIT
+                if jitSetupPresented {
+                    UTMSettingsView(initialTab: .jit)
+                }
                 #endif
             }
         }
