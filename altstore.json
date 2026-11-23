@@ -27,7 +27,19 @@
           "NSLocalNetworkUsageDescription": "UTM uses the local network to communicate with VMs and discover pairing services for Built-in StikJIT."
         }
       },
-      "versions": []
+      "versions": [
+        {
+          "version": "5.0.9",
+          "buildVersion": "132",
+          "buildNumber": "132",
+          "date": "2026-11-23T03:03:45Z",
+          "localizedDescription": "UTM with Built-in StikJIT (UTMJITHelper.appex + StikJIT.framework with 16-digit hex address patch).",
+          "downloadURL": "https://github.com/omyeol/UTM/releases/download/v5.0.9-stikjit.8/UTM.ipa",
+          "size": 149917059,
+          "sha256": "e6ab3990dbdf4359215b5f6ea07f7450b9e996e145651f38633e627f7ff7687e",
+          "minOSVersion": "15.0"
+        }
+      ]
     }
   ],
   "news": []
