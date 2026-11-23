@@ -37,6 +37,10 @@ struct UTMSettingsView: View {
         #endif
     }
 
+    #if WITH_JIT && os(iOS)
+    @ObservedObject private var jit = UTMJITCoordinator.shared
+    #endif
+
     var body: some View {
         NavigationView {
             content
@@ -68,14 +72,56 @@ struct UTMSettingsView: View {
         if selectedTab == .jit {
             UTMJITSettingsView()
         } else {
-            IASKAppSettings()
-                .appSettingsShowPrivacyLink(hasContainer)
+            VStack(spacing: 0) {
+                Button {
+                    selectedTab = .jit
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: jit.isJITReadyForCurrentEnvironment ? "bolt.circle.fill" : "bolt.fill")
+                            .font(.title3)
+                            .foregroundColor(jit.isJITReadyForCurrentEnvironment ? .green : .accentColor)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("JIT & Built-in StikJIT")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(.primary)
+                            Text(jitBannerSubtitle)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Text("Configure")
+                            .font(.subheadline)
+                            .foregroundColor(.accentColor)
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color(.secondarySystemBackground))
+                }
+                Divider()
+                IASKAppSettings()
+                    .appSettingsShowPrivacyLink(hasContainer)
+            }
         }
         #else
         IASKAppSettings()
             .appSettingsShowPrivacyLink(hasContainer)
         #endif
     }
+
+    #if WITH_JIT && os(iOS)
+    private var jitBannerSubtitle: String {
+        if jit.isJITReadyForCurrentEnvironment {
+            return jit.isTraced ? "\(jit.method.title) · Debugger Attached" : "\(jit.method.title) · Ready"
+        }
+        if jit.method == .builtIn && !jit.hasPairingFile {
+            return "Built-in StikJIT · Needs Developer Mode Pairing or Pairing File"
+        }
+        return "\(jit.method.title) · Tap to Enable or Configure"
+    }
+    #endif
 }
 
 struct UTMSettingsView_Previews: PreviewProvider {

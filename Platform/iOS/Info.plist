@@ -4,6 +4,10 @@
 <dict>
 	<key>ALTDeviceID</key>
 	<string>None</string>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).pairing.*</string>
+	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDocumentTypes</key>
@@ -68,6 +72,7 @@
 	<array>
 		<string>_altserver._tcp</string>
 		<string>_remotepairing._tcp</string>
+		<string>_remotepairing-pairable-host._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>The virtual machine may access the local network. UTM may also use the network to communicate with local servers.</string>

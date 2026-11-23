@@ -186,6 +186,7 @@ final class UTMJITCoordinator: ObservableObject {
 
     private static let methodKey = "UTMJITMethod"
     private static let forceScriptKey = "UTMJITForceScript"
+    private static let autoEnableKey = "UTMJITAutoEnableAtLaunch"
 
     @Published var method: UTMJITMethod {
         didSet {
@@ -202,6 +203,12 @@ final class UTMJITCoordinator: ObservableObject {
         }
     }
 
+    @Published var autoEnableAtLaunch: Bool {
+        didSet {
+            UserDefaults.standard.set(autoEnableAtLaunch, forKey: Self.autoEnableKey)
+        }
+    }
+
     @Published var showSetup = false
     @Published private(set) var txmStatus: UTMJITTXMStatus = .unknown
     @Published private(set) var hasPairingFile = UTMJITPairingFileStore.exists
@@ -215,6 +222,8 @@ final class UTMJITCoordinator: ObservableObject {
     private let pathMonitor = NWPathMonitor()
     private var builtInAttachInFlight = false
     private var inFlightEnableTask: Task<Void, Error>?
+    private var awaitingVPNForLaunch = false
+    private var didAttemptLaunchEnable = false
 
     var isRunningInLiveContainer: Bool {
         UTMJITBuiltIn.isRunningInLiveContainer
@@ -290,6 +299,7 @@ final class UTMJITCoordinator: ObservableObject {
             method = .waitForDebugger
         }
         forceScript = UserDefaults.standard.bool(forKey: Self.forceScriptKey)
+        autoEnableAtLaunch = UserDefaults.standard.bool(forKey: Self.autoEnableKey)
         pathMonitor.start(queue: DispatchQueue(label: "com.utmapp.UTM.jit-path", qos: .utility))
     }
 
@@ -300,6 +310,66 @@ final class UTMJITCoordinator: ObservableObject {
                 guard let self else { return }
                 if case .success(let response) = result, let present = response.txmPresent {
                     self.txmStatus = UTMJITTXMStatus(present)
+                }
+            }
+        }
+    }
+
+    func handleSceneActive() {
+        refreshStatus()
+        if awaitingVPNForLaunch {
+            awaitingVPNForLaunch = false
+            if !isJITReadyForCurrentEnvironment {
+                enableManually()
+            }
+            return
+        }
+        guard !didAttemptLaunchEnable, autoEnableAtLaunch else { return }
+        didAttemptLaunchEnable = true
+        guard !isJITReadyForCurrentEnvironment, hasGetTaskAllow else { return }
+
+        switch method {
+        case .builtIn:
+            guard UTMJITBuiltIn.isAvailable, hasPairingFile else { return }
+            if UTMLocalDevVPN.isInstalled && !UTMLocalDevVPN.isConnected {
+                awaitingVPNForLaunch = true
+                UTMLocalDevVPN.open()
+                return
+            }
+            enableManually()
+        case .stikDebug:
+            if isStikDebugInstalled {
+                enableManually()
+            }
+        case .waitForDebugger:
+            break
+        }
+    }
+
+    func storeOnDevicePairing(_ data: Data) throws {
+        try UTMJITPairingFileStore.store(data)
+        hasPairingFile = true
+        prepared = false
+        method = .builtIn
+        status = "Paired on this device."
+        error = nil
+        connectionProblem = nil
+        advice = nil
+    }
+
+    func enableManually() {
+        guard !busy else { return }
+        if isJITReadyForCurrentEnvironment {
+            error = nil
+            status = requiresScriptProtocol ? "Debugger attached. Ready to start a VM." : "JIT is already enabled."
+            return
+        }
+        Task {
+            do {
+                try await ensureJITBeforeVMStart()
+            } catch {
+                if self.error == nil {
+                    self.error = error.localizedDescription
                 }
             }
         }

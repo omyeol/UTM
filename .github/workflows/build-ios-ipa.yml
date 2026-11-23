@@ -73,9 +73,10 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ./sysroot-iOS-arm64
-          key: ios-arm64-stikjit-${{ hashFiles('scripts/build_dependencies.sh', 'scripts/build_stikjit.sh', 'scripts/fixup.sh') }}-${{ hashFiles('patches/**') }}-${{ github.run_id }}
+          key: ios-arm64-deps-${{ hashFiles('scripts/build_dependencies.sh', 'scripts/fixup.sh', 'patches/*', '!patches/stikjit-*') }}-${{ github.run_id }}
           restore-keys: |
-            ios-arm64-stikjit-${{ hashFiles('scripts/build_dependencies.sh', 'scripts/build_stikjit.sh', 'scripts/fixup.sh') }}-${{ hashFiles('patches/**') }}-
+            ios-arm64-deps-${{ hashFiles('scripts/build_dependencies.sh', 'scripts/fixup.sh', 'patches/*', '!patches/stikjit-*') }}-
+            ios-arm64-stikjit-
 
       - name: Install Sysroot Build Dependencies
         if: steps.cache-sysroot.outputs.cache-matched-key == '' || inputs.rebuild_sysroot
@@ -97,7 +98,30 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ./sysroot-iOS-arm64
-          key: ios-arm64-stikjit-${{ hashFiles('scripts/build_dependencies.sh', 'scripts/build_stikjit.sh', 'scripts/fixup.sh') }}-${{ hashFiles('patches/**') }}-${{ github.run_id }}
+          key: ios-arm64-deps-${{ hashFiles('scripts/build_dependencies.sh', 'scripts/fixup.sh', 'patches/*', '!patches/stikjit-*') }}-${{ github.run_id }}
+          upload-chunk-size: 1048576
+
+      - name: Restore StikJIT Cache
+        id: cache-stikjit
+        uses: actions/cache/restore@v4
+        with:
+          path: ./sysroot-iOS-arm64/Frameworks/StikJIT.framework
+          key: stikjit-${{ hashFiles('scripts/build_stikjit.sh', 'patches/stikjit-*', 'patches/sources') }}-${{ github.run_id }}
+          restore-keys: |
+            stikjit-${{ hashFiles('scripts/build_stikjit.sh', 'patches/stikjit-*', 'patches/sources') }}-
+
+      - name: Rebuild StikJIT.framework if Updated
+        if: steps.cache-stikjit.outputs.cache-matched-key == '' && steps.cache-sysroot.outputs.cache-matched-key != '' && !inputs.rebuild_sysroot
+        run: |
+          command -v xcodegen >/dev/null 2>&1 || brew install xcodegen
+          ./scripts/build_stikjit.sh sysroot-iOS-arm64
+
+      - name: Save StikJIT Cache
+        if: steps.cache-stikjit.outputs.cache-matched-key == '' || inputs.rebuild_sysroot
+        uses: actions/cache/save@v4
+        with:
+          path: ./sysroot-iOS-arm64/Frameworks/StikJIT.framework
+          key: stikjit-${{ hashFiles('scripts/build_stikjit.sh', 'patches/stikjit-*', 'patches/sources') }}-${{ github.run_id }}
           upload-chunk-size: 1048576
 
       - name: Static Checks (SDP)

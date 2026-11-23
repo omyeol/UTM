@@ -36,6 +36,7 @@ struct ContentView: View {
     @StateObject private var releaseHelper = UTMReleaseHelper()
     @State private var openSheetPresented = false
     @Environment(\.openURL) var openURL
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("ServerAutostart") private var isServerAutostart: Bool = false
 
     var body: some View {
@@ -123,6 +124,7 @@ struct ContentView: View {
 
                     #if os(iOS)
                     if #available(iOS 17.4, *) {
+                        UTMJITCoordinator.shared.handleSceneActive()
                         return
                     }
                     #endif
@@ -136,6 +138,13 @@ struct ContentView: View {
             #endif
             #endif
         }
+        #if os(iOS) && WITH_JIT
+        .onChange(of: scenePhase) { newPhase in
+            if newPhase == .active, #available(iOS 17.4, *) {
+                UTMJITCoordinator.shared.handleSceneActive()
+            }
+        }
+        #endif
         #if WITH_SERVER
         .onChange(of: isServerAutostart) { newValue in
             if newValue {

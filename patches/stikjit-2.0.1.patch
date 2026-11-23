@@ -43,3 +43,131 @@ diff --git a/Sources/ScriptRunner.swift b/Sources/ScriptRunner.swift
              buffer[index + nibble] = hexDigit(UInt8((address >> shift) & 0xf))
          }
      }
+diff --git a/Sources/OnDevicePairing.swift b/Sources/OnDevicePairing.swift
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/Sources/OnDevicePairing.swift
+@@ -0,0 +1,111 @@
++import Darwin
++import Foundation
++@_implementationOnly import idevice
++
++private func copyCString(_ string: String) -> UnsafeMutablePointer<CChar>? {
++    string.withCString { strdup($0) }
++}
++
++private func copyBytes(_ bytes: UnsafePointer<UInt8>, count: Int) -> UnsafeMutablePointer<UInt8>? {
++    guard count > 0, let raw = malloc(count) else { return nil }
++    memcpy(raw, bytes, count)
++    return raw.assumingMemoryBound(to: UInt8.self)
++}
++
++@_cdecl("stikjit_pairable_host_prepare")
++public func stikjit_pairable_host_prepare(
++    _ hostName: UnsafePointer<CChar>,
++    _ outServiceName: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>,
++    _ outTxtPlist: UnsafeMutablePointer<UnsafeMutablePointer<UInt8>?>,
++    _ outTxtLen: UnsafeMutablePointer<Int>,
++    _ outError: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>
++) -> UnsafeMutableRawPointer? {
++    outServiceName.pointee = nil
++    outTxtPlist.pointee = nil
++    outTxtLen.pointee = 0
++    outError.pointee = nil
++
++    var handle: OpaquePointer?
++    var serviceIDPtr: UnsafeMutablePointer<CChar>?
++    var txtDataPtr: UnsafeMutablePointer<UInt8>?
++    var txtLen: UInt = 0
++
++    if let err = pairable_host_prepare(hostName, nil, false, &handle, &serviceIDPtr, &txtDataPtr, &txtLen, nil) {
++        let parsed = IdeviceFFI.consume(err, fallback: "failed to prepare pairable host")
++        outError.pointee = copyCString(parsed.localizedDescription)
++        return nil
++    }
++
++    defer {
++        if let serviceIDPtr { idevice_string_free(serviceIDPtr) }
++        if let txtDataPtr { idevice_data_free(txtDataPtr, txtLen) }
++    }
++
++    guard let handle, let serviceIDPtr else {
++        if let handle { pairable_host_free(handle) }
++        outError.pointee = copyCString("pairable_host_prepare returned no handle")
++        return nil
++    }
++
++    outServiceName.pointee = strdup(serviceIDPtr)
++    if let txtDataPtr, txtLen > 0 {
++        outTxtPlist.pointee = copyBytes(txtDataPtr, count: Int(txtLen))
++        outTxtLen.pointee = Int(txtLen)
++    }
++    return UnsafeMutableRawPointer(handle)
++}
++
++@_cdecl("stikjit_pairable_host_accept_fd")
++public func stikjit_pairable_host_accept_fd(
++    _ handle: UnsafeMutableRawPointer,
++    _ fd: Int32,
++    _ pinCallback: PairableHostPinCb?,
++    _ pinContext: UnsafeMutableRawPointer?,
++    _ outPairingBytes: UnsafeMutablePointer<UnsafeMutablePointer<UInt8>?>,
++    _ outPairingLen: UnsafeMutablePointer<Int>,
++    _ outDeviceName: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>,
++    _ outError: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>
++) -> Int32 {
++    outPairingBytes.pointee = nil
++    outPairingLen.pointee = 0
++    outDeviceName.pointee = nil
++    outError.pointee = nil
++
++    var peerDevice: UnsafeMutablePointer<RpPairingPeerDeviceC>?
++    var pairingFile: OpaquePointer?
++
++    if let err = pairable_host_accept_fd(OpaquePointer(handle), fd, pinCallback, pinContext, &peerDevice, &pairingFile) {
++        let parsed = IdeviceFFI.consume(err, fallback: "pairing handshake failed")
++        outError.pointee = copyCString(parsed.localizedDescription)
++        return -1
++    }
++
++    if let peerDevice {
++        if let namePtr = peerDevice.pointee.name {
++            outDeviceName.pointee = strdup(namePtr)
++        }
++        rppairing_peer_device_free(peerDevice)
++    }
++
++    guard let pairingFile else {
++        outError.pointee = copyCString("pairing succeeded without a pairing file")
++        return -1
++    }
++    defer { rp_pairing_file_free(pairingFile) }
++
++    var bytesPtr: UnsafeMutablePointer<UInt8>?
++    var bytesLen: UInt = 0
++    if let err = rp_pairing_file_to_bytes(pairingFile, &bytesPtr, &bytesLen) {
++        let parsed = IdeviceFFI.consume(err, fallback: "failed to serialize pairing file")
++        outError.pointee = copyCString(parsed.localizedDescription)
++        return -1
++    }
++    guard let bytesPtr, bytesLen > 0 else {
++        outError.pointee = copyCString("empty serialized pairing file")
++        return -1
++    }
++    outPairingBytes.pointee = copyBytes(bytesPtr, count: Int(bytesLen))
++    outPairingLen.pointee = Int(bytesLen)
++    idevice_data_free(bytesPtr, bytesLen)
++    return 0
++}
++
++@_cdecl("stikjit_pairable_host_free")
++public func stikjit_pairable_host_free(_ handle: UnsafeMutableRawPointer?) {
++    guard let handle else { return }
++    pairable_host_free(OpaquePointer(handle))
++}
++
++@_cdecl("stikjit_buffer_free")
++public func stikjit_buffer_free(_ ptr: UnsafeMutableRawPointer?) {
++    free(ptr)
++}

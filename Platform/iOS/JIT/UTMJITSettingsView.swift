@@ -19,6 +19,7 @@ import SwiftUI
 
 struct UTMJITSettingsView: View {
     @ObservedObject private var jit = UTMJITCoordinator.shared
+    @ObservedObject private var pairing = UTMJITOnDevicePairing.shared
     @State private var importingPairingFile = false
 
     var body: some View {
@@ -29,6 +30,7 @@ struct UTMJITSettingsView: View {
             switch jit.method {
             case .builtIn:
                 builtInSection
+                onDevicePairingSection
                 instructionsSection
             case .stikDebug:
                 stikDebugSection
@@ -192,6 +194,16 @@ struct UTMJITSettingsView: View {
             Toggle("Force JIT Script", isOn: $jit.forceScript)
                 .disabled(jit.builtInUnavailableReason != nil || jit.busy)
 
+            Toggle("Turn on JIT when UTM opens", isOn: $jit.autoEnableAtLaunch)
+                .disabled(jit.builtInUnavailableReason != nil)
+
+            Button {
+                jit.enableManually()
+            } label: {
+                Label(jit.isJITReadyForCurrentEnvironment ? "JIT Ready" : "Enable JIT Now", systemImage: "bolt.fill")
+            }
+            .disabled(jit.builtInUnavailableReason != nil || !jit.hasPairingFile || !jit.hasGetTaskAllow || jit.busy || jit.isJITReadyForCurrentEnvironment)
+
             Button(role: .destructive) {
                 jit.resetDDI()
             } label: {
@@ -201,7 +213,99 @@ struct UTMJITSettingsView: View {
         } header: {
             Text("Built-in StikJIT")
         } footer: {
-            Text("Force JIT Script bypasses TXM detection and always runs the legacy script. Built-in StikJIT automatically prepares and attaches when you start a VM.")
+            Text("Built-in StikJIT also attaches automatically when starting a VM. On TXM/SPTM devices, Developer Mode wireless pairing or LocalDevVPN is required.")
+        }
+    }
+
+    @ViewBuilder
+    private var onDevicePairingSection: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Pair without a computer using Developer Mode wireless debugging:")
+                    .font(.footnote)
+                    .fontWeight(.semibold)
+                Text("1. Turn on Wi-Fi and tap Start Pairing below.")
+                Text("2. Open iOS Settings › Privacy & Security › Developer Mode.")
+                Text("3. Scroll down and tap Pair with UTM, then enter the 6-digit code shown here (or in the notification).")
+                Text("4. Return to UTM.")
+            }
+            .font(.footnote)
+            .foregroundColor(.secondary)
+            .padding(.vertical, 4)
+
+            switch pairing.phase {
+            case .idle:
+                Button {
+                    pairing.start()
+                } label: {
+                    Label("Start Developer Mode Pairing", systemImage: "iphone.radiowaves.left.and.right")
+                }
+                .disabled(jit.builtInUnavailableReason != nil || jit.busy)
+
+            case .waiting:
+                HStack(spacing: 10) {
+                    ProgressView()
+                    Text("Waiting for Developer Mode to connect…")
+                        .font(.footnote)
+                }
+                Button {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                } label: {
+                    Label("Open iOS Settings", systemImage: "gear")
+                }
+                if pairing.backgroundLimited {
+                    Text("iOS limits background time to ~30s for this installation. Open Settings right away.")
+                        .font(.footnote)
+                        .foregroundColor(.orange)
+                }
+                Button(role: .cancel) {
+                    pairing.cancel()
+                } label: {
+                    Label("Cancel Pairing", systemImage: "xmark.circle")
+                }
+
+            case .pin(let code):
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Pairing Code")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(code)
+                        .font(.system(.largeTitle, design: .monospaced).bold())
+                        .textSelection(.enabled)
+                }
+                .padding(.vertical, 4)
+                Button(role: .cancel) {
+                    pairing.cancel()
+                } label: {
+                    Label("Cancel Pairing", systemImage: "xmark.circle")
+                }
+
+            case .paired(let device):
+                Label("Paired with \(device).", systemImage: "checkmark.circle.fill")
+                    .foregroundColor(.green)
+                    .font(.footnote)
+                Button {
+                    pairing.reset()
+                    pairing.start()
+                } label: {
+                    Label("Pair Again…", systemImage: "arrow.clockwise")
+                }
+
+            case .failed(let message):
+                Text(message)
+                    .font(.footnote)
+                    .foregroundColor(.red)
+                Button {
+                    pairing.reset()
+                    pairing.start()
+                } label: {
+                    Label("Retry Developer Mode Pairing", systemImage: "arrow.clockwise")
+                }
+            }
+        } header: {
+            Text("Pair on This \(UTMJITOnDevicePairing.deviceKind) (Developer Mode)")
         }
     }
 

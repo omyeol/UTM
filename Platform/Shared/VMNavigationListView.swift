@@ -275,6 +275,25 @@ private struct VMListModifier: ViewModifier {
         view.toolbar {
             editItem
         }
+        #elseif os(iOS) && WITH_JIT
+        if #available(iOS 26, *) {
+            view.toolbar {
+                createItem
+                ToolbarSpacer(.fixed, placement: .navigationBarLeading)
+                donateItem
+                jitItem
+                settingsItem
+                editItem
+            }
+        } else {
+            view.toolbar {
+                createItem
+                donateItem
+                jitItem
+                settingsItem
+                editItem
+            }
+        }
         #elseif os(iOS)
         if #available(iOS 26, *) {
             view.toolbar {
@@ -346,6 +365,20 @@ private struct VMListModifier: ViewModifier {
     #endif
 
     #if !os(visionOS) && !WITH_REMOTE
+    #if WITH_JIT
+    private var jitItem: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button {
+                jitCoordinator.showSetup = true
+            } label: {
+                Label("JIT", systemImage: "bolt.fill")
+                    .foregroundColor(jitCoordinator.isJITReadyForCurrentEnvironment ? .green : .orange)
+            }
+            .help("JIT & Built-in StikJIT")
+        }
+    }
+    #endif
+
     private var settingsItem: some ToolbarContent {
         ToolbarItem(placement: .navigationBarTrailing) {
             Button {
