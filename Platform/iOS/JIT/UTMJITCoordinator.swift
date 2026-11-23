@@ -305,6 +305,19 @@ final class UTMJITCoordinator: ObservableObject {
 
     func refreshStatus() {
         hasPairingFile = UTMJITPairingFileStore.exists
+        if let saved = UserDefaults.standard.string(forKey: Self.methodKey),
+           let parsed = UTMJITMethod(rawValue: saved),
+           parsed != method {
+            method = parsed
+        }
+        let savedForce = UserDefaults.standard.bool(forKey: Self.forceScriptKey)
+        if savedForce != forceScript {
+            forceScript = savedForce
+        }
+        let savedAuto = UserDefaults.standard.bool(forKey: Self.autoEnableKey)
+        if savedAuto != autoEnableAtLaunch {
+            autoEnableAtLaunch = savedAuto
+        }
         if txmStatus == .unknown, UTMJITBuiltIn.isAvailable {
             UTMJITBuiltIn.send(.status) { [weak self] result in
                 guard let self else { return }

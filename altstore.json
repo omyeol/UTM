@@ -10,7 +10,7 @@
   ],
   "apps": [
     {
-      "name": "UTM",
+      "name": "UTM (StikJIT)",
       "bundleIdentifier": "com.utmapp.UTM",
       "developerName": "osy (Built-in StikJIT fork)",
       "subtitle": "Virtual machines for iOS with Built-in StikJIT",

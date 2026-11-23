@@ -3245,6 +3245,76 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>Title</key>
+			<string>JIT (Built-in StikJIT)</string>
+			<key>FooterText</key>
+			<string>Tap the bolt button or Settings inside UTM to pair via Developer Mode, import a pairing file, or enable JIT.</string>
+			<key>ExcludeTargets</key>
+			<array>
+				<string>iOS-Remote</string>
+				<string>iOS-SE</string>
+			</array>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSMultiValueSpecifier</string>
+			<key>Title</key>
+			<string>JIT Method</string>
+			<key>Key</key>
+			<string>UTMJITMethod</string>
+			<key>DefaultValue</key>
+			<string>builtIn</string>
+			<key>Titles</key>
+			<array>
+				<string>Built-in StikJIT</string>
+				<string>StikDebug</string>
+				<string>Wait for Debugger</string>
+			</array>
+			<key>Values</key>
+			<array>
+				<string>builtIn</string>
+				<string>stikDebug</string>
+				<string>waitForDebugger</string>
+			</array>
+			<key>ExcludeTargets</key>
+			<array>
+				<string>iOS-Remote</string>
+				<string>iOS-SE</string>
+			</array>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Turn on JIT when UTM opens</string>
+			<key>Key</key>
+			<string>UTMJITAutoEnableAtLaunch</string>
+			<key>DefaultValue</key>
+			<false/>
+			<key>ExcludeTargets</key>
+			<array>
+				<string>iOS-Remote</string>
+				<string>iOS-SE</string>
+			</array>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Force JIT Script (legacy.js)</string>
+			<key>Key</key>
+			<string>UTMJITForceScript</string>
+			<key>DefaultValue</key>
+			<false/>
+			<key>ExcludeTargets</key>
+			<array>
+				<string>iOS-Remote</string>
+				<string>iOS-SE</string>
+			</array>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
 			<string>JitStreamer</string>
 			<key>ExcludeTargets</key>
 			<array>
