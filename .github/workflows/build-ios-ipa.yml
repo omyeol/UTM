@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       runner_image:
-        description: 'macOS runner image (e.g. macos-26 or macos-15)'
+        description: 'macOS runner image (e.g. xcode-27 or macos-26)'
         required: true
-        default: 'macos-26'
+        default: 'xcode-27'
       rebuild_sysroot:
         description: 'Force rebuild sysroot?'
         type: boolean

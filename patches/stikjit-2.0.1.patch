@@ -110,7 +110,7 @@ index 0000000..1111111
 +public func stikjit_pairable_host_accept_fd(
 +    _ handle: UnsafeMutableRawPointer,
 +    _ fd: Int32,
-+    _ pinCallback: PairableHostPinCb?,
++    _ pinCallback: (@convention(c) (UnsafePointer<CChar>?, UnsafeMutableRawPointer?) -> Void)?,
 +    _ pinContext: UnsafeMutableRawPointer?,
 +    _ outPairingBytes: UnsafeMutablePointer<UnsafeMutablePointer<UInt8>?>,
 +    _ outPairingLen: UnsafeMutablePointer<Int>,

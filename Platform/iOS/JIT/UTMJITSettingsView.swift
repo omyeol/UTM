@@ -272,7 +272,7 @@ struct UTMJITSettingsView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Text(code)
-                        .font(.system(.largeTitle, design: .monospaced).bold())
+                        .font(.system(size: 32, weight: .bold, design: .monospaced))
                         .textSelection(.enabled)
                 }
                 .padding(.vertical, 4)

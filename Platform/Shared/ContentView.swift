@@ -124,7 +124,7 @@ struct ContentView: View {
 
                     #if os(iOS)
                     if #available(iOS 17.4, *) {
-                        UTMJITCoordinator.shared.handleSceneActive()
+                        await UTMJITCoordinator.shared.handleSceneActive()
                         return
                     }
                     #endif
