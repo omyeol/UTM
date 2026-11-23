@@ -1,0 +1,34 @@
+{
+  "name": "UTM (Built-in StikJIT)",
+  "identifier": "com.omyeol.utm.stikjit.source",
+  "subtitle": "Virtual machines for iOS with Built-in StikJIT",
+  "website": "https://github.com/omyeol/UTM",
+  "tintColor": "#1a2cc2",
+  "iconURL": "https://raw.githubusercontent.com/omyeol/UTM/main/Platform/Assets.xcassets/AppIcon.appiconset/Icon.png",
+  "featuredApps": [
+    "com.utmapp.UTM"
+  ],
+  "apps": [
+    {
+      "name": "UTM",
+      "bundleIdentifier": "com.utmapp.UTM",
+      "developerName": "osy (Built-in StikJIT fork)",
+      "subtitle": "Virtual machines for iOS with Built-in StikJIT",
+      "localizedDescription": "UTM is a full featured virtual machine host for iOS, patched with Built-in StikJIT (UTMJITHelper.appex + StikJIT.framework) so JIT can be enabled directly from UTM using LocalDevVPN and a pairing file, or via StikDebug / Wait for Debugger.",
+      "iconURL": "https://raw.githubusercontent.com/omyeol/UTM/main/Platform/Assets.xcassets/AppIcon.appiconset/Icon.png",
+      "tintColor": "#1a2cc2",
+      "appPermissions": {
+        "entitlements": [
+          "com.apple.developer.kernel.extended-virtual-addressing",
+          "com.apple.developer.kernel.increased-memory-limit",
+          "com.apple.security.application-groups"
+        ],
+        "privacy": {
+          "NSLocalNetworkUsageDescription": "UTM uses the local network to communicate with VMs and discover pairing services for Built-in StikJIT."
+        }
+      },
+      "versions": []
+    }
+  ],
+  "news": []
+}

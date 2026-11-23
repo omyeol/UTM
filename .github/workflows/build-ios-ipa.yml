@@ -20,6 +20,14 @@ on:
         options:
           - ipa
           - ipa-hv
+      publish_release:
+        description: 'Publish GitHub Release and update altstore.json'
+        type: boolean
+        required: false
+        default: true
+
+permissions:
+  contents: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -114,3 +122,59 @@ jobs:
           name: UTM-iOS-StikJIT-${{ inputs.ipa_mode }}
           path: out/UTM.ipa
           if-no-files-found: error
+
+      - name: Publish Release and Update AltStore Source
+        if: inputs.publish_release && inputs.ipa_mode == 'ipa'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          VERSION="$(awk -F' *= *' '/^MARKETING_VERSION[[:space:]]*=/{print $2}' Build.xcconfig | tr -d '\r')"
+          BUILD_NUM="$(awk -F' *= *' '/^CURRENT_PROJECT_VERSION[[:space:]]*=/{print $2}' Build.xcconfig | tr -d '\r')"
+          TAG="v${VERSION}-stikjit.${GITHUB_RUN_NUMBER}"
+          IPA_PATH="out/UTM.ipa"
+          IPA_SIZE="$(wc -c < "$IPA_PATH" | tr -d '[:space:]')"
+          IPA_SHA256="$(shasum -a 256 "$IPA_PATH" | awk '{print $1}')"
+          RELEASE_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          REPO="${GITHUB_REPOSITORY}"
+          DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${TAG}/UTM.ipa"
+
+          gh release create "$TAG" "$IPA_PATH" \
+            --title "UTM ${VERSION} (Built-in StikJIT #${GITHUB_RUN_NUMBER})" \
+            --notes "Built from \`${GITHUB_SHA}\` (${VERSION} / build ${BUILD_NUM}) with Built-in StikJIT support."
+
+          export VERSION BUILD_NUM IPA_SIZE IPA_SHA256 RELEASE_DATE DOWNLOAD_URL REPO
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          p = Path("altstore.json")
+          data = json.loads(p.read_text(encoding="utf-8"))
+          repo = os.environ["REPO"]
+          owner = repo.split("/")[0]
+          data["website"] = f"https://github.com/{repo}"
+          data["iconURL"] = f"https://raw.githubusercontent.com/{repo}/main/Platform/Assets.xcassets/AppIcon.appiconset/Icon.png"
+          app = data["apps"][0]
+          app["iconURL"] = data["iconURL"]
+          new_version = {
+              "version": os.environ["VERSION"],
+              "buildVersion": os.environ["BUILD_NUM"],
+              "buildNumber": os.environ["BUILD_NUM"],
+              "date": os.environ["RELEASE_DATE"],
+              "localizedDescription": "UTM with Built-in StikJIT (UTMJITHelper.appex + StikJIT.framework with 16-digit hex address patch).",
+              "downloadURL": os.environ["DOWNLOAD_URL"],
+              "size": int(os.environ["IPA_SIZE"]),
+              "sha256": os.environ["IPA_SHA256"],
+              "minOSVersion": "15.0",
+          }
+          versions = [v for v in app.get("versions", []) if v.get("downloadURL") != new_version["downloadURL"]]
+          app["versions"] = [new_version] + versions[:9]
+          p.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add altstore.json
+          git commit -m "chore(altstore): update altstore.json for ${TAG} [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
