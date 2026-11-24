@@ -29,6 +29,17 @@
       },
       "versions": [
         {
+          "version": "5.0.10",
+          "buildVersion": "133",
+          "buildNumber": "133",
+          "date": "2026-11-24T03:09:18Z",
+          "localizedDescription": "UTM with Built-in StikJIT (UTMJITHelper.appex + StikJIT.framework with 16-digit hex address patch).",
+          "downloadURL": "https://github.com/omyeol/UTM/releases/download/v5.0.10-stikjit.12/UTM.ipa",
+          "size": 152485262,
+          "sha256": "e9ea695a1575a979714f6c1228e87425e20b066899289651407f60c5b540c687",
+          "minOSVersion": "15.0"
+        },
+        {
           "version": "5.0.9",
           "buildVersion": "132",
           "buildNumber": "132",
