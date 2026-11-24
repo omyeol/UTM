@@ -28,7 +28,7 @@ import UserNotifications
 /// deployment target 15.0. Loading the already-embedded framework via `dlopen`
 /// at runtime avoids a Swift module deployment-target mismatch while keeping
 /// pairing lifecycle (background task + notifications) inside the main UTM app.
-private final class StikJITPairingBridge {
+private final class StikJITPairingBridge: @unchecked Sendable {
     typealias PinCallback = @convention(c) (UnsafePointer<CChar>?, UnsafeMutableRawPointer?) -> Void
     typealias PrepareFn = @convention(c) (
         UnsafePointer<CChar>,
@@ -196,6 +196,76 @@ private final class StikJITPairingBridge {
     }
 }
 
+private final class PairingSocketState: @unchecked Sendable {
+    private let lock = NSLock()
+    private var listenFD: Int32 = -1
+    private var activeClientFD: Int32 = -1
+    private var cancelled = false
+
+    var isOpen: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return listenFD >= 0
+    }
+
+    var isCancelled: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return cancelled
+    }
+
+    func begin(listenFD: Int32) {
+        lock.lock()
+        self.listenFD = listenFD
+        self.activeClientFD = -1
+        self.cancelled = false
+        lock.unlock()
+    }
+
+    func setClientFD(_ fd: Int32) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        if cancelled {
+            return false
+        }
+        activeClientFD = fd
+        return true
+    }
+
+    func closeClientFD() {
+        lock.lock()
+        let fd = activeClientFD
+        activeClientFD = -1
+        lock.unlock()
+        if fd >= 0 {
+            Darwin.close(fd)
+        }
+    }
+
+    func cancelAndCloseAll() {
+        lock.lock()
+        cancelled = true
+        let lfd = listenFD
+        let cfd = activeClientFD
+        listenFD = -1
+        activeClientFD = -1
+        lock.unlock()
+        if cfd >= 0 { Darwin.close(cfd) }
+        if lfd >= 0 { Darwin.close(lfd) }
+    }
+
+    func closeAll() {
+        lock.lock()
+        let lfd = listenFD
+        let cfd = activeClientFD
+        listenFD = -1
+        activeClientFD = -1
+        lock.unlock()
+        if cfd >= 0 { Darwin.close(cfd) }
+        if lfd >= 0 { Darwin.close(lfd) }
+    }
+}
+
 /// On-device wireless pairing for Built-in StikJIT.
 ///
 /// Advertises `_remotepairing-pairable-host._tcp` via mDNSResponder (`dns_sd`)
@@ -239,10 +309,7 @@ final class UTMJITOnDevicePairing: ObservableObject {
         }
     }
 
-    private let fdLock = NSLock()
-    private var listenFD: Int32 = -1
-    private var activeClientFD: Int32 = -1
-    private var cancelled = false
+    nonisolated private let socketState = PairingSocketState()
 
     private var registration: DNSServiceRef?
     private var continued: AnyObject?
@@ -277,11 +344,7 @@ final class UTMJITOnDevicePairing: ObservableObject {
             return
         }
 
-        fdLock.lock()
-        listenFD = sockFD
-        activeClientFD = -1
-        cancelled = false
-        fdLock.unlock()
+        socketState.begin(listenFD: sockFD)
 
         bridge = loadedBridge
         rawHostHandle = prepared.handle
@@ -290,7 +353,7 @@ final class UTMJITOnDevicePairing: ObservableObject {
         requestNotifications()
 
         guard publish(serviceName: prepared.serviceName, txtRecords: prepared.txtRecords, port: port) else {
-            closeSockets()
+            socketState.closeAll()
             loadedBridge.freeHost(prepared.handle)
             rawHostHandle = nil
             bridge = nil
@@ -307,19 +370,16 @@ final class UTMJITOnDevicePairing: ObservableObject {
             }
         }
 
+        let state = socketState
         let hostHandlePtr = UInt(bitPattern: prepared.handle)
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            self?.acceptLoop(listenFD: sockFD, bridge: loadedBridge, hostHandleBits: hostHandlePtr)
+        DispatchQueue.global(qos: .userInitiated).async {
+            Self.acceptLoop(socketState: state, listenFD: sockFD, bridge: loadedBridge, hostHandleBits: hostHandlePtr)
         }
     }
 
     func cancel(reason: String? = nil) {
-        guard active || listenFD >= 0 else { return }
-        fdLock.lock()
-        cancelled = true
-        fdLock.unlock()
-
-        closeSockets()
+        guard active || socketState.isOpen else { return }
+        socketState.cancelAndCloseAll()
         stopAdvertising()
         deadlineTimer?.invalidate()
         deadlineTimer = nil
@@ -337,7 +397,7 @@ final class UTMJITOnDevicePairing: ObservableObject {
         phase = .idle
     }
 
-    nonisolated private func acceptLoop(listenFD: Int32, bridge: StikJITPairingBridge, hostHandleBits: UInt) {
+    nonisolated private static func acceptLoop(socketState: PairingSocketState, listenFD: Int32, bridge: StikJITPairingBridge, hostHandleBits: UInt) {
         guard let hostHandle = UnsafeMutableRawPointer(bitPattern: hostHandleBits) else { return }
         while true {
             var addr = sockaddr_storage()
@@ -348,10 +408,10 @@ final class UTMJITOnDevicePairing: ObservableObject {
                 }
             }
             if clientFD < 0 {
-                if errno == EINTR && !isCancelled() {
+                if errno == EINTR && !socketState.isCancelled {
                     continue
                 }
-                if isCancelled() {
+                if socketState.isCancelled {
                     return
                 }
                 let errCode = errno
@@ -361,14 +421,10 @@ final class UTMJITOnDevicePairing: ObservableObject {
                 return
             }
 
-            fdLock.lock()
-            if cancelled {
-                fdLock.unlock()
+            if !socketState.setClientFD(clientFD) {
                 Darwin.close(clientFD)
                 return
             }
-            activeClientFD = clientFD
-            fdLock.unlock()
 
             do {
                 let result = try bridge.accept(handle: hostHandle, fileDescriptor: clientFD) { pin in
@@ -376,14 +432,14 @@ final class UTMJITOnDevicePairing: ObservableObject {
                         UTMJITOnDevicePairing.shared.showPin(pin)
                     }
                 }
-                closeClientFD()
+                socketState.closeClientFD()
                 DispatchQueue.main.async {
                     UTMJITOnDevicePairing.shared.finished(result: .success(result))
                 }
                 return
             } catch {
-                closeClientFD()
-                if isCancelled() {
+                socketState.closeClientFD()
+                if socketState.isCancelled {
                     return
                 }
                 DispatchQueue.main.async {
@@ -395,7 +451,7 @@ final class UTMJITOnDevicePairing: ObservableObject {
     }
 
     private func finished(result: Result<StikJITPairingBridge.PairingResult, Error>) {
-        closeSockets()
+        socketState.closeAll()
         stopAdvertising()
         deadlineTimer?.invalidate()
         deadlineTimer = nil
@@ -422,33 +478,6 @@ final class UTMJITOnDevicePairing: ObservableObject {
         }
     }
 
-    nonisolated private func isCancelled() -> Bool {
-        fdLock.lock()
-        defer { fdLock.unlock() }
-        return cancelled
-    }
-
-    nonisolated private func closeClientFD() {
-        fdLock.lock()
-        let fd = activeClientFD
-        activeClientFD = -1
-        fdLock.unlock()
-        if fd >= 0 {
-            Darwin.close(fd)
-        }
-    }
-
-    nonisolated private func closeSockets() {
-        fdLock.lock()
-        let lfd = listenFD
-        let cfd = activeClientFD
-        listenFD = -1
-        activeClientFD = -1
-        fdLock.unlock()
-        if cfd >= 0 { Darwin.close(cfd) }
-        if lfd >= 0 { Darwin.close(lfd) }
-    }
-
     private func showPin(_ pin: String) {
         guard active else { return }
         phase = .pin(pin)
@@ -464,8 +493,8 @@ final class UTMJITOnDevicePairing: ObservableObject {
     }
 
     private func fail(_ message: String) {
-        guard !isCancelled() else { return }
-        closeSockets()
+        guard !socketState.isCancelled else { return }
+        socketState.closeAll()
         stopAdvertising()
         deadlineTimer?.invalidate()
         deadlineTimer = nil
